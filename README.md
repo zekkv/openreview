@@ -1,10 +1,10 @@
 # OpenReview
 
-An open-source, self-hosted AI code review bot. Deploy to Vercel, connect a GitHub App, and get on-demand PR reviews powered by Claude.
+An open-source, self-hosted AI code review bot. Deploy to Vercel, connect a GitHub App, and get on-demand PR reviews powered by any model available on [OpenRouter](https://openrouter.ai).
 
 > **Beta**: OpenReview is currently in beta. It was built as an internal project to help the Vercel team test their technologies together. Expect rough edges and breaking changes.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-description=An+open-source%2C+self-hosted+AI+code+review+bot.+Deploy+to+Vercel%2C+connect+a+GitHub+App%2C+and+get+automated+PR+reviews+powered+by+Claude.&demo-image=https%3A%2F%2Fopenreview.labs.vercel.dev%2Fopengraph-image.png&demo-title=openreview.labs.vercel.dev&demo-url=https%3A%2F%2Fopenreview.labs.vercel.dev%2F&from=templates&project-name=OpenReview&repository-name=openreview&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fopenreview&env=GITHUB_APP_ID%2CGITHUB_APP_INSTALLATION_ID%2CGITHUB_APP_PRIVATE_KEY%2CGITHUB_APP_WEBHOOK_SECRET&products=%5B%7B%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22protocol%22%3A%22storage%22%2C%22type%22%3A%22integration%22%7D%5D&skippable-integrations=0)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-description=An+open-source%2C+self-hosted+AI+code+review+bot.+Deploy+to+Vercel%2C+connect+a+GitHub+App%2C+and+get+automated+PR+reviews+powered+by+OpenRouter.&demo-image=https%3A%2F%2Fopenreview.labs.vercel.dev%2Fopengraph-image.png&demo-title=openreview.labs.vercel.dev&demo-url=https%3A%2F%2Fopenreview.labs.vercel.dev%2F&from=templates&project-name=OpenReview&repository-name=openreview&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fopenreview&env=GITHUB_APP_ID%2CGITHUB_APP_INSTALLATION_ID%2CGITHUB_APP_PRIVATE_KEY%2CGITHUB_APP_WEBHOOK_SECRET%2COPENROUTER_API_KEY&products=%5B%7B%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22protocol%22%3A%22storage%22%2C%22type%22%3A%22integration%22%7D%5D&skippable-integrations=0)
 
 ## Features
 
@@ -15,7 +15,7 @@ An open-source, self-hosted AI code review bot. Deploy to Vercel, connect a GitH
 - **Reactions** — React with 👍 or ❤️ to approve suggestions, or 👎 or 😕 to skip
 - **Durable workflows** — Built on [Vercel Workflow](https://vercel.com/docs/workflow) for reliable, resumable execution
 - **Extensible skills** — Ships with built-in review [skills](https://skills.sh) and supports custom skills via `.agents/skills/`
-- **Powered by Claude** — Uses Claude Sonnet 4.6 via the [AI SDK](https://sdk.vercel.ai) for high-quality code analysis
+- **OpenRouter-compatible** — Uses any model available on [OpenRouter](https://openrouter.ai) via the [AI SDK](https://sdk.vercel.ai), defaulting to Claude Sonnet 4.6 — override with `AGENT_MODEL`
 - **Simple route handler** — Easily define route handlers using [Next.js Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) for custom API endpoints and webhooks
 
 ## How it works
@@ -27,7 +27,7 @@ sequenceDiagram
     participant WH as Webhook Handler
     participant WF as Vercel Workflow
     participant SB as Vercel Sandbox
-    participant AI as Claude Agent
+    participant AI as AI Agent
 
     U->>GH: @openreview in PR comment
     GH->>WH: Webhook event
@@ -59,7 +59,7 @@ sequenceDiagram
 
 1. Mention `@openreview` in a PR comment (optionally with specific instructions)
 2. OpenReview spins up a sandboxed environment and clones the repo on the PR branch
-3. A Claude-powered agent reviews the diff, explores the codebase, and runs project tooling
+3. An AI agent (any model available on OpenRouter) reviews the diff, explores the codebase, and runs project tooling
 4. The agent posts its findings as PR comments with inline suggestions
 5. If changes are made (formatting fixes, lint fixes, etc.), they're committed and pushed to the branch
 6. The sandbox is cleaned up
@@ -94,14 +94,15 @@ Generate a private key and webhook secret, then note your App ID and Installatio
 
 Add the following environment variables to your Vercel project:
 
-| Variable                     | Description                                                            |
-| ---------------------------- | ---------------------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`          | API key for Claude                                                     |
-| `GITHUB_APP_ID`              | The ID of your GitHub App                                              |
-| `GITHUB_APP_INSTALLATION_ID` | The installation ID for your repository                                |
-| `GITHUB_APP_PRIVATE_KEY`     | The private key generated for your GitHub App (with `\n` for newlines) |
-| `GITHUB_APP_WEBHOOK_SECRET`  | The webhook secret you configured                                      |
-| `REDIS_URL`                  | (Optional) Redis URL for persistent state, falls back to in-memory     |
+| Variable                     | Description                                                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `OPENROUTER_API_KEY`         | API key for [OpenRouter](https://openrouter.ai/keys)                                                                           |
+| `AGENT_MODEL`                | (Optional) OpenRouter model ID to use, e.g. `openai/gpt-5.1` or `google/gemini-3-pro` (default: `anthropic/claude-sonnet-4.6`) |
+| `GITHUB_APP_ID`              | The ID of your GitHub App                                                                                                      |
+| `GITHUB_APP_INSTALLATION_ID` | The installation ID for your repository                                                                                        |
+| `GITHUB_APP_PRIVATE_KEY`     | The private key generated for your GitHub App (with `\n` for newlines)                                                         |
+| `GITHUB_APP_WEBHOOK_SECRET`  | The webhook secret you configured                                                                                              |
+| `REDIS_URL`                  | (Optional) Redis URL for persistent state, falls back to in-memory                                                             |
 
 ### 4. Install the GitHub App
 

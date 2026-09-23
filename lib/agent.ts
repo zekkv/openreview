@@ -1,5 +1,7 @@
 import { DurableAgent } from "@workflow/ai/agent";
 
+import { env } from "@/lib/env";
+import { openrouter } from "@/lib/providers/openrouter";
 import type { SkillMetadata } from "@/lib/skills";
 import { buildSkillsPrompt } from "@/lib/skills";
 import { createBashTool } from "@/lib/tools/bash";
@@ -7,6 +9,8 @@ import { createLoadSkillTool } from "@/lib/tools/load-skill";
 import { createReadFileTool } from "@/lib/tools/read-file";
 import { createReplyTool } from "@/lib/tools/reply";
 import { createWriteFileTool } from "@/lib/tools/write-file";
+
+const DEFAULT_MODEL = "anthropic/claude-sonnet-4.6";
 
 const instructions = `You are an expert software engineering assistant working inside a sandbox with a git repository checked out on a PR branch.
 
@@ -79,7 +83,7 @@ export const createAgent = (
     .join("\n\n");
 
   return new DurableAgent({
-    model: "anthropic/claude-sonnet-4.6",
+    model: openrouter(env.AGENT_MODEL ?? DEFAULT_MODEL),
     system,
     tools: {
       bash: createBashTool(sandboxId),
